@@ -1,148 +1,105 @@
-# E-Commerce Microservices with Golang
+# Go eCommerce Microservice
 
-This is a project just for hobby
+This project is a Go-based eCommerce microservice featuring user authentication and management. It uses Docker for containerization and provides a RESTful API for user-related operations.
 
-## Service Diagram
+## Table of Contents
 
-This is a service diagram. These are services planned to be implemented
+1. [Getting Started](#getting-started)
+2. [API Endpoints](#api-endpoints)
+3. [Testing with Postman](#testing-with-postman)
+4. [Known Issues](#known-issues)
 
-```mermaid
-graph TD
-	UI-->BrokerService;
-	BrokerService-->AuthService;
-	BrokerService-->MailService;
-	BrokerService-->ProductService;
-	BrokerService-->CatalogService;
-	BrokerService-->CartService;
-	
-	AuthService-->LoggerService;
-	AuthService-->AuthPostgresSQL;
-	
-	MailService-->LoggerService;
-	MailService-->MailPostgresSQL;
-	
-  ProductService-->LoggerService;
-	ProductService-->ProductPostgresSQL;
-	
-	CatalogService-->LoggerService;
-	CatalogService-->CatalogPostgresSQL;
-	
-	CartService-->LoggerService;
-	CartService-->CartPostgresSQL;
-	
-	LoggerService-->MongoDB;
-```
+## Getting Started
 
-## UI
+1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/go-ecommerce-microservice.git
+   cd go-ecommerce-microservice
+   ```
 
-All UI components will be here and served by Fiber. So, you need to run it using this command
+2. Navigate to the scripts directory:
+   ```
+   cd scripts
+   ```
 
-### Running
+3. Run the project using Docker Compose:
+   ```
+   docker-compose up -d --build
+   ```
 
-```
-cd ui
+   This command will build and start all the necessary containers for the project.
 
-make build-run
-```
+4. The service will be available at `http://localhost:8083`.
 
-## Broker Service
+## API Endpoints
 
-This is just a basic broker service for now. There are two endpoints, one is optional.
+The following endpoints are available:
 
-### services.json
+- **POST /api/v1/auth**: User authentication
+- **GET /api/v1/users**: Retrieve all users
+- **GET /api/v1/users/:id**: Retrieve a single user
+- **POST /api/v1/users**: Create a new user
+- **PUT /api/v1/users**: Update an existing user
+- **DELETE /api/v1/users**: Soft delete an existing user
+- **GET /ping**: Health check endpoint
 
-This is a file that contains other microservices and their configs. It's placed in the root folder
+## Testing with Postman
 
-### Registered Routes
+Here are the Postman calls to test the API endpoints:
 
-- GET: `/` -> Returns JSON for index
-- GET: `/api/users` -> Returns all users
-- GET: `/api/users/:id` -> Returns a single user by id
-- GET: `/ping` -> Returns 200 and text/plain result. This route works when you use `HeartBeat` middleware.
+1. **Create a New User**
+   - Method: POST
+   - URL: `http://localhost:8083/api/v1/users`
+   - Body (raw JSON):
+	 ```json
+	 {
+	   "email": "testuser@example.com",
+	   "password": "testpassword"
+	 }
+	 ```
 
-### Routes
+2. **Authenticate User**
+   - Method: POST
+   - URL: `http://localhost:8083/api/v1/auth`
+   - Body (raw JSON):
+	 ```json
+	 {
+	   "email": "testuser@example.com",
+	   "password": "testpassword"
+	 }
+	 ```
 
-Routes can be found under the `routes` folder. `routes.go` file contains middleware configs and handlers. Routes use these handlers.
+3. **Get All Users**
+   - Method: GET
+   - URL: `http://localhost:8083/api/v1/users`
 
-### Middleware
+4. **Get Single User**
+   - Method: GET
+   - URL: `http://localhost:8083/api/v1/users/1`
 
-All middleware can be found under the `middleware` folder. I created a middleware to demonstrate how you can create your own. Shortly, this middleware adds an ability to show service status. It would be necessary If you use a health check service and need to know your service's status.
+5. **Update User**
+   - Method: PUT
+   - URL: `http://localhost:8083/api/v1/users`
+   - Body (raw JSON):
+	 ```json
+	 {
+	   "id": 1,
+	   "email": "updateduser@example.com"
+	 }
+	 ```
 
-### Running
+6. **Delete User**
+   - Method: DELETE
+   - URL: `http://localhost:8083/api/v1/users/1`
 
-```
-cd broker-service
+7. **Ping (Health Check)**
+   - Method: GET
+   - URL: `http://localhost:8083/ping`
 
-make build-run
-```
+Note: The service uses session-based authentication. After successful login, Postman will automatically manage the session cookies for subsequent requests.
 
-## Auth Service
+## Known Issues
 
-This is an authentication service for now. There are three endpoints, one is optional.
-
-### Registered Routes
-
-- POST: `/api/v1/auth` -> User login route
-- GET: `/api/v1/users` -> Returns all users
-- GET: `/api/v1/users/:id` -> Returns single user
-- POST: `/api/v1/users` -> Creates a new user
-- PUT: `/api/v1/users` -> Updates an existing user
-- DELETE: `/api/v1/users` -> Soft delete an existing user
-- GET: `/ping` -> Returns 200 and text/plain result. This route works when you use `HeartBeat` middleware.
-
-### Routes
-
-Routes can be found under the `routes` folder. `routes.go` file contains middleware configs and handlers. Routes use these handlers.
-
-### Middleware
-
-All middleware can be found under the `middleware` folder. I created a middleware to demonstrate how you can create your own. Shortly, this middleware adds an ability to show service status. It would be necessary If you use a health check service and need to know your service's status.
-
-### Models
-
-All model files can be found under the `models` folder. There are already two models called `models` and `response_models`
-
-The first one is holding data from database and the second one will use for http responses
-
-### Repository
-
-You can find repository files in this folder. All repository files should only have database operations, nothing else.
-
-I'm not sure about that should we create a logic folder to separate logic from routes? Aren't handlers for this?
-
-### Running
-
-```
-cd auth-service
-
-make build-run
-```
-
-## scripts
-
-Docker-related files and others can be found in this folder. I've tried to separate this folder to avoid repeating processes such as docker-compose, database images, .etc
-
-
-## TODO
-
-There are things to be completed. I should be documented each service. If I do this, I can explain everything to anyone without interaction. (I believe that).
-
-These are the things I should be completed! And, more will become.
-
-- [ ] UI Service
-- [ ] Broker Service
-- [ ] Auth Service
-  - [ ] PostgresSQL Connection
-  - [ ] Logger Service Connection
-- [ ] Logger Service
-  - [ ] MongoDB Connection
-- [ ] Mail Service
-- [ ] Product Service
-- [ ] Catalog Service
-- [ ] Cart Service
-- [ ] Unit Tests
-- [ ] Service Documentation
-
-## Notes
-
-Hi there! I'm not good at microservices and golang. This is my first experience. Please give me your ideas. I'm open to new ideas.
+1. The API uses session-based authentication instead of token-based (JWT) authentication.
+2. Error handling for authentication failures returns 500 Internal Server Error instead of more appropriate status codes (e.g., 401 Unauthorized).
+3. Some error messages may be inconsistent.
